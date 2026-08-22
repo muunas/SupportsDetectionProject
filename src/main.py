@@ -13,8 +13,8 @@ from distance import calcular_distancia
 from filter import filterfunc
 from distance import precio_actual
 
-## CONFIGURACIÓN
-ruta_ticker = r"..." ## Cambiar a la ruta de tu ticker.json
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ruta_ticker = os.path.join(BASE_DIR, "..", "data", "ticker.json")
 years = 1
 max_pct = 5
 ventana = 2
