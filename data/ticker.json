@@ -1,0 +1,23 @@
+{
+  "tickers": [
+    "AAPL","GOOGL","AMZN","NVDA","META","TSLA","BRK-B","LLY","JPM",
+    "V","WMT","XOM","PG","MA","UNH","HD","AVGO","ORCL","COST",
+    "BAC","KO","PEP","MRK","ABBV","CVX","TMO","MCD","DIS","NFLX",
+    "NKE","INTC","AMD","LIN","ADBE","CRM","UPS","SHEL","BHP","TM",
+    "SONY","SAP","NEE","RTX","PM","HON","IBM","QCOM","TXN","AMAT",
+    "CAT","DE","GS","MS","BLK","UNP","BA","LMT","SCHW",
+    "SPGI","PLD","ELV","CI","MDT","SYK","ISRG","AMGN","GILD","REGN",
+    "CSCO","BKNG","AXP","T","VZ","MO","RIO",
+    "SHOP","RYAAY","SAN","BBVA",
+    "PDD","BABA","JD","NTES","MELI",
+    "ASML","WM","PSA","O","KMB","UL","CL","MDLZ","JNJ","SPXC","DLR",
+    "TSM","MCO","QSR","LOW","UBS","ALV","WFC","SBUX","IEF","KSA",
+    "GLD","NDAQ","BOTZ","JEPI","HIG","IWM","SLV","MSCI","URNM","DUK",
+    "SO","CB","OR","XLE","USO","CCEP","MMM","MNST","UBER","LRCX",
+    "MSFT",
+
+    "BDX","ABT","APD","SHW","FDX","CSX","EQIX","SPG",
+
+    "EMR","RHM","ITW","PH","ETN","ECL","PPG","DG","KR","SYY","NSC"
+  ]
+}
