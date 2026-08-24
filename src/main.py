@@ -13,8 +13,19 @@ from distance import calcular_distancia
 from filter import filterfunc
 from distance import precio_actual
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ruta_ticker = os.path.join(BASE_DIR, "..", "data", "ticker.json")
+
+
+## Seleccion de la ruta dependiendo de si se ejecuta desde .exe o desde visual
+if hasattr(sys, "_MEIPASS"):
+
+    BASE_DIR = sys._MEIPASS
+    ruta_ticker = os.path.join(BASE_DIR, "data", "ticker.json")
+else:
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    ruta_ticker = os.path.join(BASE_DIR, "..", "data", "ticker.json")
+
+
 years = 1
 max_pct = 5
 ventana = 2
