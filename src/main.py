@@ -47,6 +47,49 @@ def obtener_ruta_ticker():
     guardar_ruta_ticker(ruta)
     return ruta
 
+def imprimir_porcentajes_coloreados(resultados):
+    VERDE = "\033[92m"
+    ROJO = "\033[91m"
+    RESET = "\033[0m"
+
+    for simbolo, pct in resultados:
+        color = VERDE if pct >= 0 else ROJO
+        print(f"{simbolo}: {color}{pct:.2f}%{RESET}")
+
+
+def analizar_cambios_porcentuales(rticker):
+    # Cargar tickers del JSON
+    with open(rticker, "r") as f:
+        tickers = json.load(f)["tickers"]
+
+    # Llamada batch (rápida)
+    t = Ticker(tickers)
+    hist = t.history(period="2d", interval="1d")
+
+    resultados = []
+
+    for simbolo in tickers:
+        try:
+            df = hist.loc[simbolo]  # dataframe del ticker
+            precios = df["close"].tolist()
+
+            if len(precios) < 2:
+                continue
+
+            precio_ayer = precios[-2]
+            precio_hoy = precios[-1]
+
+            pct = ((precio_hoy - precio_ayer) / precio_ayer) * 100
+            resultados.append((simbolo, pct))
+
+        except Exception:
+            continue
+
+    # Orden descendente → ascendiente
+    resultados.sort(key=lambda x: x[1])
+
+    return resultados
+
 
 def ejecutar_pipeline(rticker,data):
     print("\n==============================================")
@@ -107,8 +150,9 @@ def mostrar_menu():
     print("\n==============================================")
     print(" COMANDOS DISPONIBLES")
     print("==============================================")
-    print(" start  → Ejecutar screener")
-    print(" edit   → Editar ticker.json")
+    print(" supports  → Analisis de soportes")
+    print(" edit_tickers   → Editar ticker.json")
+    print(" pctchanges   → Analisis de cambios porcentuales")
     print(" exit   → Salir del programa")
     print("==============================================\n")
 
@@ -125,11 +169,15 @@ def main():
     while True:
         comando = input(">>> ").strip().lower()
 
-        if comando == "start":
+        if comando == "supports":
             ejecutar_pipeline(ruta_ticker,data)
 
-        elif comando == "edit":
+        elif comando == "edit_tickers":
             abrir_editor(ruta_ticker)
+
+        elif comando == "pctchanges":
+            resultados = analizar_cambios_porcentuales(ruta_ticker)
+            imprimir_porcentajes_coloreados(resultados)
 
         elif comando == "exit":
             print("\nCerrando programa...")
@@ -137,7 +185,7 @@ def main():
             break
 
         else:
-            print("Comando no reconocido. Usa: start, edit, exit.\n")
+            print("Comando no reconocido. Usa: supports, edit_tickers, pctchanges, exit.\n")
 
 
 ## Punto de entrada
