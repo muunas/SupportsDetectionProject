@@ -13,6 +13,7 @@ from yahooquery import Ticker
 from distance import calcular_distancia
 from filter import filterfunc
 from distance import precio_actual
+from calculator import ejecutar_calculadora
 
 
 years = 3
@@ -20,9 +21,13 @@ max_pct = 5
 ventana = 2
 visualizer = True  
 CONFIG_PATH = "config.json"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUTPUT_DIR = os.path.join(BASE_DIR, "InRangeSupports")
 
 
-
+# ==========================
+# FUNCIONES DE CONFIG
+# ==========================
 
 def cargar_ruta_ticker():
     if os.path.exists(CONFIG_PATH):
@@ -46,6 +51,9 @@ def obtener_ruta_ticker():
     return ruta
 
 
+# ==========================
+# VISUALIZADOR
+# ==========================
 
 def imprimir_porcentajes_coloreados(resultados):
     VERDE = "\033[92m"
@@ -56,7 +64,7 @@ def imprimir_porcentajes_coloreados(resultados):
         color = VERDE if pct >= 0 else ROJO
         print(f"{simbolo}: {color}{pct:.2f}%{RESET}")
 
-def plot_ticker_with_supports(df, supports, ticker):
+def plot_ticker_with_supports(df, supports, ticker, output_dir=OUTPUT_DIR):
     df = df.rename(columns={
         "open": "Open",
         "high": "High",
@@ -96,7 +104,13 @@ def plot_ticker_with_supports(df, supports, ticker):
     plt.title(f"{ticker} - Supports & Current Price", color="white")
 
     plt.tight_layout()
-    plt.show()
+    os.makedirs(output_dir, exist_ok=True)
+    safe_ticker = ticker.replace("/", "_").replace("\\", "_").replace(":", "_")
+    filepath = os.path.join(output_dir, f"{safe_ticker}.png")
+
+    fig.savefig(filepath, facecolor=fig.get_facecolor(), bbox_inches="tight")
+    plt.close(fig)
+    print(f"-> Gráfico guardado en: {filepath}")
 
 
 # ==========================
@@ -108,13 +122,21 @@ def analizar_cambios_porcentuales(rticker):
         tickers = json.load(f)["tickers"]
 
     t = Ticker(tickers)
-    hist = t.history(period="2d", interval="1d")
+
+    # Yahoo está fallando con period="2d"
+    hist = t.history(period="5d", interval="1d")
 
     resultados = []
 
     for simbolo in tickers:
         try:
             df = hist.loc[simbolo]
+
+            # Fallback por si Yahoo devuelve columnas corruptas
+            if "close" not in df.columns:
+                continue
+
+            df = df.dropna(subset=["close"])
             precios = df["close"].tolist()
 
             if len(precios) < 2:
@@ -179,6 +201,28 @@ def ejecutar_pipeline(rticker, data):
 # COMANDOS
 # ==========================
 
+def limpiar_graficos_soporte(output_dir=OUTPUT_DIR):
+    if not os.path.exists(output_dir):
+        print("La carpeta InRangeSupports no existe.\n")
+        return
+
+    archivos = [f for f in os.listdir(output_dir) if f.lower().endswith(".png")]
+    if not archivos:
+        print("No hay archivos .png para eliminar en InRangeSupports.\n")
+        return
+
+    eliminados = 0
+    for archivo in archivos:
+        ruta = os.path.join(output_dir, archivo)
+        try:
+            os.remove(ruta)
+            eliminados += 1
+        except Exception as e:
+            print(f"Error al eliminar {archivo}: {e}")
+
+    print(f"Se eliminaron definitivamente {eliminados} gráfico(s) .png de InRangeSupports.\n")
+
+
 def abrir_editor(rticker):
     print("\nAbriendo ticker.json...")
     subprocess.Popen(["notepad.exe", rticker])
@@ -191,7 +235,9 @@ def mostrar_menu():
     print(" supports      → Analisis de soportes")
     print(" edit_tickers → Editar ticker.json")
     print(" pctchanges   → Analisis de cambios porcentuales")
-    print(" set_years    → Cambiar años analizados")
+    print(" dca_calculator → Calculadora de niveles DCA")
+    print(" set_years      → Cambiar años analizados")
+    print(" clean_supports → Eliminar gráficos de InRangeSupports")
     print(" viz_on       → Activar visualizador")
     print(" viz_off      → Desactivar visualizador")
     print(" exit         → Salir del programa")
@@ -232,6 +278,9 @@ def main():
             resultados = analizar_cambios_porcentuales(ruta_ticker)
             imprimir_porcentajes_coloreados(resultados)
 
+        elif comando == "dca_calculator":
+            ejecutar_calculadora()
+
         elif comando == "set_years":
             try:
                 nuevo = int(input("Nuevo valor para years: "))
@@ -239,6 +288,9 @@ def main():
                 print(f"Years actualizado a {years}\n")
             except:
                 print("Valor inválido.\n")
+
+        elif comando in ["clean_supports", "clear_supports", "clean"]:
+            limpiar_graficos_soporte()
 
         elif comando == "viz_on":
             visualizer = True
